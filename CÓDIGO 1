@@ -1,0 +1,50 @@
+using System;
+using System.IO;
+using System.IO.Ports;
+using System.Threading;
+namespace Codigo_1_Arduino
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            SerialPort puertoSerial = new SerialPort("COM6", 9600);
+            puertoSerial.Open();
+            Console.WriteLine("Puerto serial abierto.");
+
+            do
+            {
+                using (StreamReader leer = new StreamReader("EncendidoApagado.txt"))
+                {
+                    string horaActual = DateTime.Now.ToString("HH:mm");
+                    string linea = leer.ReadLine();
+                    while (linea != null)
+                    {
+                        string[] partes = linea.Split(',');
+                        int mensaje = int.Parse(partes[1]);
+                        string Momento = partes[0];
+
+                        if (horaActual == Momento)
+                        {
+                            if (mensaje == 0)
+                            {
+                                puertoSerial.Write("A");
+                                Console.WriteLine($"Apagar a las {Momento}");
+                            }
+                            else if (mensaje == 1)
+                            {
+                                puertoSerial.Write("E");
+                                Console.WriteLine($"Encender a las {Momento}");
+                            }
+                        }
+
+                        linea = leer.ReadLine();
+                    }
+                }
+                Thread.Sleep(2000);
+            } while (true);
+            puertoSerial.Close();
+            Console.WriteLine("Puerto serial cerrado.");
+        }
+    }
+}
